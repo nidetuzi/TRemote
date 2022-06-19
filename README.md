@@ -56,7 +56,7 @@
 
 
 
-### 使用的类或框架
+### 使用的库或框架
 
 * [Flutter](https://flutter.dev/)
 * [fluent_ui](https://github.com/bdlukaa/fluent_ui)
