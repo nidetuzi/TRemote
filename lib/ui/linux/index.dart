@@ -10,6 +10,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tremote/bean/Server.dart';
+import 'package:tremote/common/Event.dart';
 import 'package:tremote/common/Log.dart';
 import 'package:tremote/common/SFTP.dart';
 import 'package:tremote/common/Utils.dart';
@@ -59,6 +60,7 @@ class _LinuxPageState extends State<LinuxPage> {
   void initState() {
     super.initState();
     logger.i("初始化");
+
     terminal = Terminal(
       backend: MyTerminalBackend(widget.server),
       maxLines: 10000,
@@ -80,6 +82,7 @@ class _LinuxPageState extends State<LinuxPage> {
         ),
       ],
     );
+    //通用菜单
     List<CMenu.MenuItem> commonMenu = [
       CMenu.MenuItem(
         label: '上传',
@@ -98,29 +101,35 @@ class _LinuxPageState extends State<LinuxPage> {
                 remotePath: remotePath,
                 savePath: file.path,
                 server: widget.server,
-                isUpload: true);
+                isUpload: true,
+                pageKey: widget.key
+                );
           }
         },
       ),
       CMenu.MenuItem.separator(),
       CMenu.MenuItem(
           label: "删除",
-          onClick: (_) {
+          onClick: (_) async {
             if (currentRightFile != null) {
               var remotepath =
                   currentInputDir + "/" + currentRightFile!.filename;
               if (isFile(currentRightFile!.filetype)) {
-                //sftp.remove(remotepath);
+                await sftp.remove(remotepath);
+              } else {
+                await sftp.rmdir(remotepath);
               }
+              getFileList(currentDir);
             }
           }),
       CMenu.MenuItem(
-          label: "快速删除(rm)",
-          onClick: (_) {
+          label: "快速删除(rm -rf)",
+          onClick: (_) async {
             if (currentRightFile != null) {
               var remotepath =
                   currentInputDir + "/" + currentRightFile!.filename;
-              Clipboard.setData(ClipboardData(text: remotepath));
+              await client.run("rm -rf " + remotepath);
+              getFileList(currentDir);
             }
           }),
       CMenu.MenuItem.separator(),
@@ -133,8 +142,15 @@ class _LinuxPageState extends State<LinuxPage> {
               Clipboard.setData(ClipboardData(text: remotepath));
             }
           }),
+      CMenu.MenuItem(
+          label: "刷新",
+          onClick: (_) {
+            if (currentRightFile != null) {
+              getFileList(currentDir);
+            }
+          }),
     ];
-    //文件类型菜单
+    //文件菜单
     fileMenu = CMenu.Menu(
       items: [
         CMenu.MenuItem(
@@ -193,7 +209,14 @@ class _LinuxPageState extends State<LinuxPage> {
         ...commonMenu
       ],
     );
+    //文件夹菜单
     dirMenu = CMenu.Menu(items: [...commonMenu]);
+    //刷新文件列表
+    eventBus.on<EventRefreshSFTPFiles>().listen((event) {
+      if(event.key == widget.key){
+        getFileList(currentDir);
+      }
+    });
     getData();
   }
 
@@ -497,13 +520,22 @@ class _LinuxPageState extends State<LinuxPage> {
             ? Expanded(
                 flex: 1,
                 child: DropTarget(
-                  onDragDone: (detail) {
-                    print(detail);
-                  },
-                  child: TreeView(
-                      items: fileList,
-                      selectionMode: TreeViewSelectionMode.single),
-                ))
+                    onDragDone: (detail) {
+                      print(detail);
+                    },
+                    child: GestureDetector(
+                      onSecondaryTap: () {
+                        print("右键");
+                        currentRightFile = null;
+                        CMenu.popUpContextualMenu(
+                          dirMenu,
+                          placement: CMenu.Placement.bottomRight,
+                        );
+                      },
+                      child: TreeView(
+                          items: fileList,
+                          selectionMode: TreeViewSelectionMode.single),
+                    )))
             : const Expanded(
                 child: Padding(
                 padding: EdgeInsets.all(10),

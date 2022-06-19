@@ -4,9 +4,7 @@ import 'dart:isolate';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:filesize/filesize.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/foundation.dart';
 import 'package:local_notifier/local_notifier.dart';
-import 'package:tremote/bean/FileItem.dart';
 import 'package:tremote/bean/IsolateBean.dart';
 import 'package:tremote/bean/Server.dart';
 import 'package:tremote/bean/TransferIsolateBean.dart';
@@ -20,27 +18,31 @@ import 'package:worker_manager/worker_manager.dart';
 import 'Log.dart';
 
 /// 传输文件
-transferFile(
-    {required BuildContext context,
-    required String filename,
-    required int filesize,
-    required String remotePath,
-    required String savePath,
-    required Server server,
-    required bool isUpload}) async {
+transferFile({
+  required BuildContext context,
+  required String filename,
+  required int filesize,
+  required String remotePath,
+  required String savePath,
+  required Server server,
+  required bool isUpload,
+  Key? pageKey,
+}) async {
   var key = DateTime.now().millisecondsSinceEpoch;
   //添加到传输列表
   context.read<AppProvider>().getTransferList().putIfAbsent(
       key,
       () => TransferItem(
-          key: key,
-          filename: filename,
-          size: filesize,
-          remotepath: remotePath,
-          localpath: savePath,
-          isUpload: isUpload,
-          isFinish: false,
-          progress: 0));
+            key: key,
+            filename: filename,
+            size: filesize,
+            remotepath: remotePath,
+            localpath: savePath,
+            isUpload: isUpload,
+            isFinish: false,
+            progress: 0,
+            createTime: DateTime.now().millisecondsSinceEpoch,
+          ));
   //发送增加传输列表事件
   eventBus.fire(EventAddTransferItem());
 
@@ -102,7 +104,9 @@ transferFile(
                 body: "文件:" + filename + " 下载完成",
               ).show();
             }
-
+            if (pageKey != null) {
+              eventBus.fire(EventRefreshSFTPFiles(key: pageKey));
+            }
             break;
           }
       }

@@ -24,6 +24,8 @@ class TransferItem {
   /// 当前进度
   double progress = 0;
 
+  int? createTime;
+
   TransferItem({
     required this.key,
     required this.filename,
@@ -33,5 +35,6 @@ class TransferItem {
     required this.isUpload,
     required this.isFinish,
     required this.progress,
+    required this.createTime,
   });
 }

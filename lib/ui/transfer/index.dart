@@ -1,3 +1,4 @@
+import 'package:date_format/date_format.dart';
 import 'package:file_icon/file_icon.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:tremote/bean/FileItem.dart';
@@ -120,6 +121,11 @@ class _TransferPageState extends State<TransferPage> {
                 )
               ],
             )),
+        Expanded(
+            flex: 1,
+            child: Text(formatDate(
+                DateTime.fromMillisecondsSinceEpoch(transfer.createTime!),
+                [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]))),
       ]),
     );
   }
@@ -154,6 +160,7 @@ class _TransferPageState extends State<TransferPage> {
                 Expanded(flex: 2, child: Text("本地路径")),
                 Expanded(flex: 2, child: Text("远程路径")),
                 Expanded(flex: 1, child: Text("速度")),
+                Expanded(flex: 1, child: Text("创建时间")),
               ]),
             ),
             itemList.isNotEmpty

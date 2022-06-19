@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 // tabBar切换选中页面
 import 'package:event_bus/event_bus.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 import 'package:tremote/bean/Server.dart';
 import 'package:tremote/bean/TransferItem.dart';
@@ -28,4 +29,13 @@ class EventRefreshTransferItem {
   String speed;
 
   EventRefreshTransferItem(this.key, this.progress, this.speed);
+}
+
+
+class EventRefreshSFTPFiles {
+  Key key;
+  EventRefreshSFTPFiles({
+    required this.key,
+  });
+  
 }
