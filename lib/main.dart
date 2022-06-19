@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:local_notifier/local_notifier.dart';
 import 'package:provider/provider.dart';
 import 'package:system_theme/system_theme.dart';
@@ -99,7 +100,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
-    ;
   }
 }
 
