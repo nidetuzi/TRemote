@@ -23,6 +23,10 @@ class _ConnectPageState extends State<ConnectPage> {
 
   List<TreeViewItem> itemList = [];
 
+  //上次点击时间
+  int lastClickTime = 0;
+  TreeViewItem? lastClickItem;
+
   final values = ['Linux', 'Windows'];
   String? comboBoxValue;
 
@@ -52,12 +56,31 @@ class _ConnectPageState extends State<ConnectPage> {
   void buildListItem() {
     List<TreeViewItem> list = <TreeViewItem>[];
     for (var element in items) {
-      list.add(
-          TreeViewItem(content: _buildServerItem(element), value: element));
+      list.add(TreeViewItem(
+          content: _buildServerItem(element),
+          value: element,
+          onInvoked: doubleTap));
     }
     setState(() {
       itemList = list;
     });
+  }
+
+  //检测双击事件
+  Future<void> doubleTap(TreeViewItem item) async {
+    if (lastClickItem != item) {
+      lastClickItem = item;
+      lastClickTime = DateTime.now().millisecondsSinceEpoch;
+      return;
+    }
+    if (DateTime.now().millisecondsSinceEpoch - lastClickTime <= 300) {
+      var server = item.value as Server;
+      var app = context.read<AppProvider>();
+      app.setTabIndex(0);
+      eventBus.fire(EventAddTerminalTab(server));
+      return;
+    }
+    lastClickTime = DateTime.now().millisecondsSinceEpoch;
   }
 
   _buildServerItem(Server server) {

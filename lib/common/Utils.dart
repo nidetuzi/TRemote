@@ -1,11 +1,9 @@
-
-
 import 'dart:io';
 
-String Separator(){
-  if(Platform.isWindows){
+String Separator() {
+  if (Platform.isWindows) {
     return "\\";
-  }else{
+  } else {
     return "/";
   }
 }

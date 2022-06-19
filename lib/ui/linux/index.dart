@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:dartssh2/dartssh2.dart';
 import 'package:date_format/date_format.dart';
@@ -8,22 +7,16 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart' as FilePicker;
 import 'package:filesize/filesize.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:local_notifier/local_notifier.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tremote/bean/Server.dart';
-import 'package:tremote/bean/TransferItem.dart';
 import 'package:tremote/common/Log.dart';
 import 'package:tremote/common/SFTP.dart';
 import 'package:tremote/common/Utils.dart';
 import 'package:tremote/manager/ConnectManager.dart';
-import 'package:tremote/ui/linux/menu.dart';
 import 'package:xterm/flutter.dart';
 import 'package:xterm/xterm.dart';
 import 'package:contextual_menu/contextual_menu.dart' as CMenu;
-import 'package:provider/provider.dart';
-import 'package:tremote/provider/AppProvider.dart';
 
 import '../../bean/FileItem.dart';
 import '../../common/TerminalBackend.dart';
@@ -109,6 +102,27 @@ class _LinuxPageState extends State<LinuxPage> {
           }
         },
       ),
+      CMenu.MenuItem.separator(),
+      CMenu.MenuItem(
+          label: "删除",
+          onClick: (_) {
+            if (currentRightFile != null) {
+              var remotepath =
+                  currentInputDir + "/" + currentRightFile!.filename;
+              if (isFile(currentRightFile!.filetype)) {
+                //sftp.remove(remotepath);
+              }
+            }
+          }),
+      CMenu.MenuItem(
+          label: "快速删除(rm)",
+          onClick: (_) {
+            if (currentRightFile != null) {
+              var remotepath =
+                  currentInputDir + "/" + currentRightFile!.filename;
+              Clipboard.setData(ClipboardData(text: remotepath));
+            }
+          }),
       CMenu.MenuItem.separator(),
       CMenu.MenuItem(
           label: "复制路径",

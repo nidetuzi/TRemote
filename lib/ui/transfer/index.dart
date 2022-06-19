@@ -108,7 +108,10 @@ class _TransferPageState extends State<TransferPage> {
               children: [
                 transfer.isUpload
                     ? const Icon(FluentIcons.upload)
-                    : const Icon(FluentIcons.download,size: 14,),
+                    : const Icon(
+                        FluentIcons.download,
+                        size: 14,
+                      ),
                 ValueListenableBuilder<String>(
                   builder: (context, value, child) {
                     return Text(value);

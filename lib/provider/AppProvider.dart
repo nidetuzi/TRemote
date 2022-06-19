@@ -27,7 +27,7 @@ class AppProvider extends ChangeNotifier {
     this.transferList = transferList;
     notifyListeners();
   }
-  
+
   /// 获取当前传输数量
   int getTransferCount() {
     int i = 0;

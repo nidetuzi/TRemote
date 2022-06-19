@@ -5,7 +5,6 @@ import 'package:tremote/bean/FileItem.dart';
 import 'package:tremote/bean/Server.dart';
 
 class TransferIsolateBean {
-
   String filename;
   String remotePath;
   String localPath;
@@ -17,6 +16,4 @@ class TransferIsolateBean {
     required this.localPath,
     required this.server,
   });
-
-  
 }

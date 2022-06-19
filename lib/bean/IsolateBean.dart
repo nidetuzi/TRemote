@@ -8,15 +8,13 @@ class IsolateBean {
   });
 }
 
-
-
-
-enum IsolateType{
+enum IsolateType {
   /// 开始下载
   startTransfer,
+
   /// 下载进度
   transferProgress,
+
   /// 下载完成
   endTransfer,
-  
 }

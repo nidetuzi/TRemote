@@ -167,7 +167,8 @@ void uploadIsolate(SendPort sendPort) {
             var bean = message.data as TransferIsolateBean;
             var ssh = await ConnectManager().getSSHClient(bean.server);
             var sftp = await ssh!.sftp();
-            var file = await sftp.open(bean.remotePath,mode: SftpFileOpenMode.create | SftpFileOpenMode.write);
+            var file = await sftp.open(bean.remotePath,
+                mode: SftpFileOpenMode.create | SftpFileOpenMode.write);
             file.write(
               File(bean.localPath).openRead().cast(),
               onProgress: (total) {

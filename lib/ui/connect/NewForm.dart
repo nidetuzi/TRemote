@@ -12,7 +12,6 @@ class NewFormPage extends StatefulWidget {
 }
 
 class _NewFormPageState extends State<NewFormPage> {
-  
   final _formKey = GlobalKey<FormState>();
   final values = ['Linux', 'Windows'];
   String? comboBoxValue = "Linux";

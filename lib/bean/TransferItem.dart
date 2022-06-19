@@ -24,8 +24,6 @@ class TransferItem {
   /// 当前进度
   double progress = 0;
 
-
-
   TransferItem({
     required this.key,
     required this.filename,

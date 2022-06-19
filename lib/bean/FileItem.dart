@@ -17,12 +17,12 @@ class FileItem {
 enum FileType { file, directory, linkFile, linkDirectory }
 
 /// 是否是文件
-bool isFile(FileType type){
+bool isFile(FileType type) {
   return type == FileType.file || type == FileType.linkFile;
 }
 
 //获取文件类型对应的图标
-getFileTypeIcon(FileType type,String filename) {
+getFileTypeIcon(FileType type, String filename) {
   switch (type) {
     case FileType.file:
       {

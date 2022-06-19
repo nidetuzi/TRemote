@@ -31,7 +31,6 @@ class Server {
   Server(this.id, this.name, this.type, this.ip, this.port, this.username,
       this.password);
 
-
   Server copyWith({
     String? id,
     String? name,
