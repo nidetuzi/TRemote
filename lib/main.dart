@@ -10,6 +10,7 @@ import 'package:tremote/manager/DBManager.dart';
 import 'package:tremote/provider/AppProvider.dart';
 import 'package:tremote/ui/connect/index.dart';
 import 'package:tremote/ui/index/index.dart';
+import 'package:tremote/ui/settings/index.dart';
 import 'package:tremote/ui/transfer/index.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -65,9 +66,14 @@ Future<void> main() async {
   await Executor().warmUp(log: true);
 
   //初始化APP
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider.value(value: AppProvider()),
-  ], child: const MyApp()));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: AppProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -79,27 +85,13 @@ class MyApp extends StatelessWidget {
     var appTheme = AppTheme();
     return FluentApp(
       title: "标题",
-      themeMode: appTheme.mode,
+      themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: false,
       home: const MyHomePage(),
-      color: appTheme.color,
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        accentColor: appTheme.color,
-        visualDensity: VisualDensity.standard,
-        focusTheme: FocusThemeData(
-          glowFactor: is10footScreen() ? 2.0 : 0.0,
-        ),
-      ),
       theme: ThemeData(
-        accentColor: appTheme.color,
-        visualDensity: VisualDensity.standard,
-        focusTheme: FocusThemeData(
-          glowFactor: is10footScreen() ? 2.0 : 0.0,
-        ),
+        fontFamily: "MiSans",
       ),
     );
-    
   }
 }
 
@@ -139,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
         title: () {
           return const DragToMoveArea(
             child: Align(
-              alignment: AlignmentDirectional.centerStart,
+              alignment: AlignmentDirectional.center,
               child: Text("兔兔的远程管理工具"),
             ),
           );
@@ -209,10 +201,11 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
       ),
       content: IndexedStack(
           index: context.watch<AppProvider>().getTabIndex(),
-          children: const [
-            IndexPage(),
-            ConnectPage(),
-            TransferPage(),
+          children: [
+            const IndexPage(),
+            const ConnectPage(),
+            const TransferPage(),
+            Settings(controller: settingsController),
           ]),
     );
   }

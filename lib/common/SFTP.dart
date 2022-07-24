@@ -82,9 +82,6 @@ transferFile({
               secondCount += (message.data as int) - lastSize;
             }
             lastSize = message.data;
-            //设置进度信息
-            context.read<AppProvider>().getTransferList()[key]!.progress =
-                (message.data / filesize!) * 100;
             //触发更新事件
             eventBus.fire(EventRefreshTransferItem(
                 key, (message.data / filesize!) * 100, speedText));
@@ -92,7 +89,6 @@ transferFile({
           }
         case IsolateType.endTransfer:
           {
-            context.read<AppProvider>().getTransferList()[key]!.isFinish = true;
             if (isUpload) {
               LocalNotification(
                 title: "TRemote",

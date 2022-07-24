@@ -49,8 +49,7 @@ class _LinuxPageState extends State<LinuxPage> {
   TreeViewItem? lastClickItem;
   //终端
   late Terminal terminal;
-  late CMenu.Menu fileMenu;
-  late CMenu.Menu dirMenu;
+  late List commonMenu = [];
   late CMenu.Menu termMenu;
   final _formKey = GlobalKey();
 // 定时器
@@ -83,10 +82,10 @@ class _LinuxPageState extends State<LinuxPage> {
       ],
     );
     //通用菜单
-    List<CMenu.MenuItem> commonMenu = [
-      CMenu.MenuItem(
-        label: '上传',
-        onClick: (_) async {
+    commonMenu = [
+      MenuFlyoutItem(
+        text: const Text('上传'),
+        onPressed: () async {
           FilePicker.FilePickerResult? result =
               await FilePicker.FilePicker.platform.pickFiles();
           if (result != null) {
@@ -102,118 +101,105 @@ class _LinuxPageState extends State<LinuxPage> {
                 savePath: file.path,
                 server: widget.server,
                 isUpload: true,
-                pageKey: widget.key
-                );
+                pageKey: widget.key);
           }
+          Navigator.of(context).pop();
         },
       ),
-      CMenu.MenuItem.separator(),
-      CMenu.MenuItem(
-          label: "删除",
-          onClick: (_) async {
+      const MenuFlyoutSeparator(),
+      MenuFlyoutItem(
+          text: const Text("删除"),
+          onPressed: () async {
             if (currentRightFile != null) {
-              var remotepath =
-                  currentInputDir + "/" + currentRightFile!.filename;
-              if (isFile(currentRightFile!.filetype)) {
-                await sftp.remove(remotepath);
-              } else {
-                await sftp.rmdir(remotepath);
-              }
-              getFileList(currentDir);
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return ContentDialog(
+                    title: const Text("提示"),
+                    content: const Text("确认要删除该文件或者文件夹? 该操作无法撤销!"),
+                    actions: [
+                      Button(
+                        child: const Text('删除'),
+                        onPressed: () async {
+                          var remotepath = currentInputDir +
+                              "/" +
+                              currentRightFile!.filename;
+                          if (isFile(currentRightFile!.filetype)) {
+                            await sftp.remove(remotepath);
+                          } else {
+                            await sftp.rmdir(remotepath);
+                          }
+                          getFileList(currentDir);
+                          Navigator.pop(context);
+                        },
+                      ),
+                      FilledButton(
+                        child: const Text('取消'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  );
+                },
+              );
             }
+            Navigator.of(context).pop();
           }),
-      CMenu.MenuItem(
-          label: "快速删除(rm -rf)",
-          onClick: (_) async {
+      MenuFlyoutItem(
+          text: const Text("快速删除(rm -rf)"),
+          onPressed: () async {
             if (currentRightFile != null) {
-              var remotepath =
-                  currentInputDir + "/" + currentRightFile!.filename;
-              await client.run("rm -rf " + remotepath);
-              getFileList(currentDir);
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return ContentDialog(
+                    title: const Text("提示"),
+                    content: const Text("确认要删除该文件或者文件夹? 该操作无法撤销!"),
+                    actions: [
+                      Button(
+                        child: const Text('删除'),
+                        onPressed: () async {
+                          var remotepath = currentInputDir +
+                              "/" +
+                              currentRightFile!.filename;
+                          await client.run("rm -rf " + remotepath);
+                          getFileList(currentDir);
+                          Navigator.pop(context);
+                        },
+                      ),
+                      FilledButton(
+                        child: const Text('取消'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  );
+                },
+              );
             }
+            Navigator.of(context).pop();
           }),
-      CMenu.MenuItem.separator(),
-      CMenu.MenuItem(
-          label: "复制路径",
-          onClick: (_) {
+      const MenuFlyoutSeparator(),
+      MenuFlyoutItem(
+          text: const Text("复制路径"),
+          onPressed: () {
             if (currentRightFile != null) {
               var remotepath =
                   currentInputDir + "/" + currentRightFile!.filename;
               Clipboard.setData(ClipboardData(text: remotepath));
             }
+            Navigator.of(context).pop();
           }),
-      CMenu.MenuItem(
-          label: "刷新",
-          onClick: (_) {
+      MenuFlyoutItem(
+          text: const Text("刷新"),
+          onPressed: () {
             if (currentRightFile != null) {
               getFileList(currentDir);
             }
+            Navigator.of(context).pop();
           }),
     ];
-    //文件菜单
-    fileMenu = CMenu.Menu(
-      items: [
-        CMenu.MenuItem(
-          label: '下载',
-          onClick: (_) async {
-            if (currentRightFile != null &&
-                currentRightFile!.filetype != FileType.directory &&
-                currentRightFile!.filetype != FileType.linkDirectory) {
-              Directory? dir = await getDownloadsDirectory();
-              //本地保存目录
-              var savePath = dir!.path + "\\" + currentRightFile!.filename;
-              //远程目录
-              var remotePath = currentDir + "/" + currentRightFile!.filename;
-              print(remotePath);
-              //调用传输方法
-              transferFile(
-                  context: context,
-                  filename: currentRightFile!.filename,
-                  filesize: currentRightFile!.sftp.attr.size!,
-                  remotePath: remotePath,
-                  savePath: savePath,
-                  server: widget.server,
-                  isUpload: false);
-            }
-          },
-        ),
-        CMenu.MenuItem(
-          label: '下载到指定文件夹',
-          onClick: (_) async {
-            if (currentRightFile != null &&
-                currentRightFile!.filetype != FileType.directory &&
-                currentRightFile!.filetype != FileType.linkDirectory) {
-              String? selectedDirectory =
-                  await FilePicker.FilePicker.platform.getDirectoryPath();
-              if (selectedDirectory != null) {
-                //本地保存目录
-                var savePath = selectedDirectory +
-                    Separator() +
-                    currentRightFile!.filename;
-                //远程目录
-                var remotePath = currentDir + "/" + currentRightFile!.filename;
-                //调用传输方法
-                transferFile(
-                    context: context,
-                    filename: currentRightFile!.filename,
-                    filesize: currentRightFile!.sftp.attr.size!,
-                    remotePath: remotePath,
-                    savePath: savePath,
-                    server: widget.server,
-                    isUpload: false);
-              }
-            }
-          },
-        ),
-        CMenu.MenuItem.separator(),
-        ...commonMenu
-      ],
-    );
-    //文件夹菜单
-    dirMenu = CMenu.Menu(items: [...commonMenu]);
     //刷新文件列表
     eventBus.on<EventRefreshSFTPFiles>().listen((event) {
-      if(event.key == widget.key){
+      if (event.key == widget.key) {
         getFileList(currentDir);
       }
     });
@@ -366,42 +352,95 @@ class _LinuxPageState extends State<LinuxPage> {
   _buildFileItem(FileItem file) {
     return Container(
       transform: Matrix4.translationValues(-18.0, 0.0, 0.0),
-      child: GestureDetector(
-        onSecondaryTap: () {
-          currentRightFile = file;
+      child: Row(children: [
+        getFileTypeIcon(file.filetype, file.filename),
+        const SizedBox(
+          width: 5,
+        ),
+        Expanded(flex: 2, child: Text(file.filename)),
+        Expanded(flex: 1, child: Text(getFileTypeName(file.filetype))),
+        Expanded(
+            flex: 1,
+            child: isFile(file.filetype)
+                ? Text(filesize(file.sftp.attr.size))
+                : const Text("")),
+        Expanded(
+            flex: 1,
+            child: Text(formatDate(
+                DateTime.fromMillisecondsSinceEpoch(
+                    file.sftp.attr.modifyTime! * 1000),
+                [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]))),
+      ]),
+    );
+  }
 
-          if (isFile(file.filetype)) {
-            CMenu.popUpContextualMenu(
-              fileMenu,
-              placement: CMenu.Placement.bottomRight,
-            );
-          } else {
-            CMenu.popUpContextualMenu(
-              dirMenu,
-              placement: CMenu.Placement.bottomRight,
-            );
-          }
-        },
-        child: Row(children: [
-          getFileTypeIcon(file.filetype, file.filename),
-          const SizedBox(
-            width: 5,
-          ),
-          Expanded(flex: 2, child: Text(file.filename)),
-          Expanded(flex: 1, child: Text(getFileTypeName(file.filetype))),
-          Expanded(
-              flex: 1,
-              child: isFile(file.filetype)
-                  ? Text(filesize(file.sftp.attr.size))
-                  : const Text("")),
-          Expanded(
-              flex: 1,
-              child: Text(formatDate(
-                  DateTime.fromMillisecondsSinceEpoch(
-                      file.sftp.attr.modifyTime! * 1000),
-                  [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]))),
-        ]),
-      ),
+  Widget _buildFileMenu(context) {
+    return MenuFlyout(
+      items: [
+        MenuFlyoutItem(
+          text: const Text('下载'),
+          onPressed: () async {
+            if (currentRightFile != null &&
+                currentRightFile!.filetype != FileType.directory &&
+                currentRightFile!.filetype != FileType.linkDirectory) {
+              Directory? dir = await getDownloadsDirectory();
+              //本地保存目录
+              var savePath = dir!.path + "\\" + currentRightFile!.filename;
+              //远程目录
+              var remotePath = currentDir + "/" + currentRightFile!.filename;
+              print(remotePath);
+              //调用传输方法
+              transferFile(
+                  context: context,
+                  filename: currentRightFile!.filename,
+                  filesize: currentRightFile!.sftp.attr.size!,
+                  remotePath: remotePath,
+                  savePath: savePath,
+                  server: widget.server,
+                  isUpload: false);
+            }
+            Navigator.of(context).pop();
+          },
+        ),
+        MenuFlyoutItem(
+          text: const Text('下载到指定文件夹'),
+          onPressed: () async {
+            print(currentRightFile);
+            if (currentRightFile != null &&
+                currentRightFile!.filetype != FileType.directory &&
+                currentRightFile!.filetype != FileType.linkDirectory) {
+              String? selectedDirectory =
+                  await FilePicker.FilePicker.platform.getDirectoryPath(dialogTitle:"选择保存文件夹",lockParentWindow: true);
+              if (selectedDirectory != null) {
+                //本地保存目录
+                var savePath = selectedDirectory +
+                    Separator() +
+                    currentRightFile!.filename;
+                //远程目录
+                var remotePath = currentDir + "/" + currentRightFile!.filename;
+                //调用传输方法
+                transferFile(
+                    context: context,
+                    filename: currentRightFile!.filename,
+                    filesize: currentRightFile!.sftp.attr.size!,
+                    remotePath: remotePath,
+                    savePath: savePath,
+                    server: widget.server,
+                    isUpload: false);
+              }
+              Navigator.of(context).pop();
+            }
+          },
+        ),
+        const MenuFlyoutSeparator(),
+        ...commonMenu
+      ],
+    );
+  }
+
+  Widget _buildDirMenu(context) {
+    return MenuFlyout(
+      items: [...commonMenu],
     );
   }
 
@@ -524,17 +563,33 @@ class _LinuxPageState extends State<LinuxPage> {
                       print(detail);
                     },
                     child: GestureDetector(
-                      onSecondaryTap: () {
-                        print("右键");
-                        currentRightFile = null;
-                        CMenu.popUpContextualMenu(
-                          dirMenu,
-                          placement: CMenu.Placement.bottomRight,
-                        );
+                      onSecondaryTapDown: (detail) {
+                        //空白处右键
+                        //TODO: 暂时屏蔽 
+                        // currentRightFile = null;
+                        // showMenu(
+                        //     context: context,
+                        //     builder: _buildDirMenu,
+                        //     offset: detail.globalPosition);
                       },
                       child: TreeView(
-                          items: fileList,
-                          selectionMode: TreeViewSelectionMode.single),
+                        items: fileList,
+                        selectionMode: TreeViewSelectionMode.single,
+                        onSecondaryTap: (item, offset) async {
+                          currentRightFile = item.value as FileItem;
+                          if (isFile((item.value as FileItem).filetype)) {
+                            showMenu(
+                                context: context,
+                                builder: _buildFileMenu,
+                                offset: offset);
+                          } else {
+                            showMenu(
+                                context: context,
+                                builder: _buildDirMenu,
+                                offset: offset);
+                          }
+                        },
+                      ),
                     )))
             : const Expanded(
                 child: Padding(

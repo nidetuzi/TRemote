@@ -40,6 +40,10 @@ class _TransferPageState extends State<TransferPage> {
         progressList[event.key]!.value = event.progress;
         speedList[event.key]!.value = event.speed;
       });
+      context.read<AppProvider>().getTransferList()[event.key]!.progress = event.progress;
+      if(event.progress >= 100){
+      context.read<AppProvider>().getTransferList()[event.key]!.isFinish = true;
+      }
     });
     buildListItem(context.read<AppProvider>().getTransferList());
   }
@@ -136,41 +140,39 @@ class _TransferPageState extends State<TransferPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SizedBox(
-        height: 1000,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 5),
-              child: Row(children: const [
-                SizedBox(
-                  width: 18,
-                ),
-                SizedBox(
-                  width: 5,
-                ),
-                Expanded(flex: 2, child: Text("名称")),
-                Expanded(flex: 1, child: Text("状态")),
-                Expanded(
-                  flex: 1,
-                  child: Text("进度"),
-                ),
-                Expanded(flex: 1, child: Text("大小")),
-                Expanded(flex: 2, child: Text("本地路径")),
-                Expanded(flex: 2, child: Text("远程路径")),
-                Expanded(flex: 1, child: Text("速度")),
-                Expanded(flex: 1, child: Text("创建时间")),
-              ]),
-            ),
-            itemList.isNotEmpty
-                ? TreeView(
-                    items: itemList,
-                    selectionMode: TreeViewSelectionMode.single,
-                    onSelectionChanged: onSelectionChanged)
-                : Container()
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 5),
+            child: Row(children: const [
+              SizedBox(
+                width: 18,
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Expanded(flex: 2, child: Text("名称")),
+              Expanded(flex: 1, child: Text("状态")),
+              Expanded(
+                flex: 1,
+                child: Text("进度"),
+              ),
+              Expanded(flex: 1, child: Text("大小")),
+              Expanded(flex: 2, child: Text("本地路径")),
+              Expanded(flex: 2, child: Text("远程路径")),
+              Expanded(flex: 1, child: Text("速度")),
+              Expanded(flex: 1, child: Text("创建时间")),
+            ]),
+          ),
+          itemList.isNotEmpty
+              ? TreeView(
+                  items: itemList,
+                  selectionMode: TreeViewSelectionMode.single,
+                  onSelectionChanged: onSelectionChanged)
+              : Container()
+        ],
       ),
     );
   }
